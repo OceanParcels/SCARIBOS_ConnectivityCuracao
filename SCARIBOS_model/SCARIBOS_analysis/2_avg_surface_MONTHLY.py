@@ -57,7 +57,7 @@ for i, sim_month in enumerate(sim_months):
         u_top_mean = xr.open_dataset(u_file).u
         v_top_mean = xr.open_dataset(v_file).v
         speed = xr.open_dataset(speed_file).__xarray_dataarray_variable__
-    print(f"Files for {sim_month} exist. Loaded u, v, and speed.")
+        print(f"Files for {sim_month} exist. Loaded u, v, and speed.")
     else:
         # Load CROCO output file for the current month if not already processed
         his_file = f'../CONFIG/{config}/CROCO_FILES/surface_currents/croco_avg_{sim_month}_surface.nc'
