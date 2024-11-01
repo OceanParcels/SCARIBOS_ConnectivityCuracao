@@ -1,6 +1,8 @@
 # SCARIBOS_ConnectivityCuracao
 
-Repository for Vesna's project on flow patterns, hotspots, and connectivity around Curaçao (Southern Caribbean). This project contains the following folders:
+Repository for Vesna's project on flow patterns, hotspots, and connectivity around Curaçao (Southern Caribbean). Preprint: Bertoncelj, V., Mienis, F., Stocchi, P., and van Sebille, E.: Flow patterns, hotspots and connectivity of land-derived substances at the sea surface of Curaçao in the Southern Caribbean, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2024-3112, 2024.
+
+This project contains the following folders:
 
 ## Project Structure:
 
