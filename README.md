@@ -50,7 +50,7 @@ SCARIBOS is run for the period from December 2019 to March 2024. Period from Dec
 - ```2_avg_surface_ALLYEARS.py``` and ```2_avg_surface_MONTHLY.py```: scripts to calcualte average surface currents (all years together and monthly variations) and re-create **Figure 6**
 - ```2_merge_plots_for_paper.py```: script that merges plots of monthly and yearly average currents (either meridioanl or surface) and create final figures **Figure 6** and **Figure 7**
 - ```3_validation_...```: scripts for validation of SCARIBOS model (with GlobCUrrent, MultiObs and GLORYS), to re-create **Figure 2** and supplimentary figures **Figure S2**, **Figure S3**, **Figure S4**, **Figure S5** and **Figure S6**.
-- ```4_checking_EKE_for_spinup_time.py```: script to calcualte EKE (for spin-up time duration) and to re-create supplimantary **Figure S1**
+- ```4_checking_EKE_for_spinup_time.py```: script to calculate EKE (for spin-up time duration) and to re-create supplimantary **Figure S1**
 
 
 ## Lagrangian particle tracking using Parcels: simulations and diagnostics
