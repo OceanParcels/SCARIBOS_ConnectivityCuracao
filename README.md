@@ -45,10 +45,12 @@ SCARIBOS is run for the period from December 2019 to March 2024. Period from Dec
 **[SCARIBOS_analysis](./SCARIBOS_model/SCARIBOS_analysis/)**:
 - ```1_PE529_extract_surface_currents.py```: script that extract the surface currents from ADCP data, obtained with VMADCP during RV _Pelagia_ 64PE529 expedition
 - ```1_plot_map_of_SouthernCaribbean.py```: script to re-create **Figure 1** of the manuscript
-- ```1_validate...```: scripts to validate the model and re-create **Figure 2** and **Figure 3**
-- ```2_avg_meri_ALLYEARS.py``` and ```2_avg_meri_MONTHLY.py```: scripts to calcualte average meridional currents (all years together and monthly variations) and re-create **Figure 6**
-- ```2_avg_surface_ALLYEARS.py``` and ```2_avg_surface_MONTHLY.py```: scripts to calcualte average surface currents (all years together and monthly variations) and re-create **Figure 5**
-- ```2_merge_plots_for_paper.py```: script that merges plots of monthly and yearly average currents (either meridioanl or surface) and create final figures **Figure 5** and **Figure 6**
+- ```1_validate...```: scripts to validate the model with observations (ADCP from RV _Pelagia_ and tidal gauge) and re-create **Figure 3** and **Figure 4**
+- ```2_avg_meri_ALLYEARS.py``` and ```2_avg_meri_MONTHLY.py```: scripts to calcualte average meridional currents (all years together and monthly variations) and re-create **Figure 7**
+- ```2_avg_surface_ALLYEARS.py``` and ```2_avg_surface_MONTHLY.py```: scripts to calcualte average surface currents (all years together and monthly variations) and re-create **Figure 6**
+- ```2_merge_plots_for_paper.py```: script that merges plots of monthly and yearly average currents (either meridioanl or surface) and create final figures **Figure 6** and **Figure 7**
+- ```3_validation_...```: scripts for validation of SCARIBOS model (with GlobCUrrent, MultiObs and GLORYS), to re-create **Figure 2** and supplimentary figures **Figure S2**, **Figure S3**, **Figure S4**, **Figure S5** and **Figure S6**.
+- ```4_checking_EKE_for_spinup_time.py```: script to calcualte EKE (for spin-up time duration) and to re-create supplimantary **Figure S1**
 
 
 ## Lagrangian particle tracking using Parcels: simulations and diagnostics
@@ -69,8 +71,8 @@ The structure of the scripts, found in **[parcels_analysis](./parcels_analysis/)
 - ```submit_...```: these are 6 example scripts that are used to submit SLURM jobs to IMAU Lorenz cluster (usually to run in parallel, but not necessary)
 
 Scripts to re-create figures in the manuscript: 
-- ```1_plot_scenario_maps.py```: **Figure 4**
-- ```4_plot_HOTSPOTS.py```: **Figure 7**
-- ```4_plot_COASTCON.py```: **Figure 8**
-- ```4_plot_REGIOCON.py```: **Figure 9**
+- ```1_plot_scenario_maps.py```: **Figure 5**
+- ```4_plot_HOTSPOTS.py```: **Figure 8**
+- ```4_plot_COASTCON.py```: **Figure 9**
+- ```4_plot_REGIOCON.py```: **Figure 10**
 
