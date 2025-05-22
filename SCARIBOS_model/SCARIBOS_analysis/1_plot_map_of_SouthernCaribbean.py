@@ -20,12 +20,13 @@ import geopandas as gpd
 import xarray as xr
 from matplotlib.colors import LinearSegmentedColormap
 
+
 # Load the shapefile of Curacao
 shapefile_path = 'data/CUW_adm0.shp'
 land = gpd.read_file(shapefile_path)
 
 # Load the bathymetry data
-bathy_gebpel_file = 'data/gebco_and_pelagia_merged_SCARIBOS_V2.nc'
+bathy_gebpel_file = 'data/data_large_files/gebco_and_pelagia_merged_SCARIBOS_V2.nc'
 bathy_gebpel = xr.open_dataset(bathy_gebpel_file)
 bathy_gebpel_topo = bathy_gebpel['topo']
 
@@ -41,15 +42,15 @@ def custom_div_cmap(numcolors=50, name='custom_div_cmap',
                                               colors=[mincol, midcol, midcol2, maxcol],
                                               N=numcolors)
     return cmap
-blevels = [-5000, -4000, -3000, -2500, -2000, -1500, -1000,-800, -600,  -400, -200, 0]   # define levels for plotting (transition of colorbar)
+blevels = [-5373, -4000, -3500, -3000, -2000, -1500, -1000, -750, -500, -250, 0]   # define levels for plotting (transition of colorbar)
 N       = (len(blevels)-1)*2
 cmap2_bl   = custom_div_cmap(N, mincol='#3f3f3f', midcol='dimgrey', midcol2='#888888' ,maxcol='w')
-levels = 40
-vmin = -4000
+levels = 10
+vmin = -5373
 vmax = 0
 
 # Load the bathymetry data from ETOPO
-etopo_data = xr.open_dataset('data/bathy_etopo2.nc')
+etopo_data = xr.open_dataset('data/data_large_files/bathy_etopo2.nc')
 bathymetry = etopo_data['z']
 bathymetry_subregion = bathymetry.sel(latitude=slice(8.5, 16), longitude=slice(-73, -60))
 
@@ -69,10 +70,10 @@ gs = gridspec.GridSpec(1, 1)
 ax1 = fig.add_subplot(gs[0, 0], projection=ccrs.PlateCarree())
 contourf = ax1.contourf(bathymetry_subregion['longitude'], bathymetry_subregion['latitude'], 
                         bathymetry_subregion, levels, cmap=cmap2_bl, vmin=vmin, vmax=vmax, 
-                        transform=ccrs.PlateCarree(), extend='min')
-for c in contourf.collections:
-    c.set_rasterized(True)
-ax1.coastlines(resolution='50m', color='grey', linewidth=0.5)
+                        transform=ccrs.PlateCarree(), extend='min', rasterized=True)
+# for c in contourf.collections:
+#     c.set_rasterized(True)
+# ax1.coastlines(resolution='50m', color='grey', linewidth=0.5)
 ax1.add_feature(cfeature.LAND, zorder=1, color='saddlebrown', alpha=0.4)
 gridlines = ax1.gridlines(draw_labels=False, zorder=1, linewidth=0.5)
 gridlines.xlabels_top = False
@@ -99,17 +100,17 @@ ax1.plot([-69.4, -70.1], [12.6, 13.4], color=square_cur_color , linewidth=square
 curacao_extent = [-69.4, -68.5, 11.8, 12.6]  # [west, east, south, north]
 inset_ax = fig.add_axes([0, 0.635, 0.3, 0.3], projection=ccrs.PlateCarree())
 inset_ax.set_extent(curacao_extent)
-contourf_zoomed = inset_ax.contourf(bathy_gebpel_topo['lon'], bathy_gebpel_topo['lat'], bathy_gebpel_topo, levels, 
-                                    cmap=cmap2_bl,vmin=vmin, vmax = vmax)
-for c in contourf_zoomed.collections:
-    c.set_rasterized(True)
+contourf_zoomed = inset_ax.contourf(bathy_gebpel_topo['lon'], bathy_gebpel_topo['lat'], bathy_gebpel_topo, 25, 
+                                    cmap=cmap2_bl,vmin=-5000, vmax = 0, rasterized=True)
+# for c in contourf_zoomed.collections:
+#     c.set_rasterized(True)
 inset_ax.add_geometries(land.geometry, crs=ccrs.PlateCarree(), facecolor='saddlebrown',alpha = 0.4,  edgecolor='k', linewidth=0.5, zorder = 2, rasterized=True)
 
 # colorbar
 cbar_ax = fig.add_axes([0.923, 0.06, 0.025, 0.888]) 
-cbar = plt.colorbar(contourf, cax=cbar_ax, orientation='vertical', label='Depth [m]', shrink=0.9)
+cbar = plt.colorbar(contourf, cax=cbar_ax, orientation='vertical', label='Depth [m]', shrink=0.9, extend=None)
 cbar.set_label('Depth [m]', fontsize=font0)
-ticks = np.arange(-5000, int(vmax) + 1, 500)
+ticks = [-5000, -4500, -4000, -3500, -3000, -2500, -2000, -1500, -1000, -500, 0]
 cbar.set_ticks(ticks) 
 cbar.ax.tick_params(labelsize=font0)
 
@@ -161,5 +162,6 @@ plt.subplots_adjust(left=0.05, right=0.9, top=0.95, bottom=0.05)  # Adjust margi
 
 
 plt.savefig('bathymetry_southern_caribbean_with_inset.png', dpi=300, bbox_inches='tight')
-plt.savefig('bathymetry_southern_caribbean_with_inset.pdf', format = 'pdf', dpi=300, bbox_inches='tight')
 
+
+# %%

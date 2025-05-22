@@ -12,7 +12,7 @@ Additinal files needed: 1) croco_grd.nc - input grid file
                             - 1_buffer_areas_COASTCON.py
 '''
 
-
+#%%
 # Import libraries
 import numpy as np
 import xarray as xr
@@ -33,20 +33,20 @@ landmask = grid.mask_rho.values
 landmask = np.where(landmask == 0, 1, np.nan)
 
 # COASTCON (Intra-island connectivity):
-buffered_areas = np.load('COASTCON/buffer_areas/COASTCON_buffered_areas.npy', allow_pickle=True)
+buffered_areas = np.load('../COASTCON/buffer_areas/COASTCON_buffered_areas.npy', allow_pickle=True)
 release_locations = ['zone_1', 'zone_2', 'zone_3', 'zone_4', 'zone_5', 'zone_6', 'zone_7', 'zone_8']
 colors = plt.cm.ocean_r(np.linspace(0, 1, len(release_locations)+1))
 
 # HOTSPOTS:
-hotspots = np.load('INPUT/release_locs_HOTSPOTS.npy')
+hotspots = np.load('../INPUT/release_locs_HOTSPOTS.npy')
 xmin, xmax, ymin, ymax = -69.49, -68.49, 11.67, 12.67 # limits for plotting hotspots
 
 # REGIOCON (Coastal connectivity):
-ARUB = np.load('INPUT/release_locs_REGIOCON_ARUB.npy')
-BONA = np.load('INPUT/release_locs_REGIOCON_BONA.npy')
-VEIS = np.load('INPUT/release_locs_REGIOCON_VEIS.npy')
-VECO = np.load('INPUT/release_locs_REGIOCON_VECO.npy')
-curacao_coast_points = np.load('INPUT/coastal_points_CURACAO.npy')
+ARUB = np.load('../INPUT/release_locs_REGIOCON_ARUB.npy')
+BONA = np.load('../INPUT/release_locs_REGIOCON_BONA.npy')
+VEIS = np.load('../INPUT/release_locs_REGIOCON_VEIS.npy')
+VECO = np.load('../INPUT/release_locs_REGIOCON_VECO.npy')
+curacao_coast_points = np.load('../INPUT/coastal_points_CURACAO.npy')
 # make buffer area from coastal points of Curaçao
 points = [Point(lon, lat) for lon, lat in zip(curacao_coast_points[0], curacao_coast_points[1])]
 multi_point = MultiPoint(points)
@@ -76,10 +76,12 @@ def custom_div_cmap(numcolors=50, name='custom_div_cmap',
                                               colors=[mincol, midcol, midcol2, maxcol],
                                               N=numcolors)
     return cmap
-blevels = [-5000, -4000, -3000, -2500, -2000, -1500, -1000,-800, -600,  -400, -200, 0]   # define levels for plotting (transition of colorbar)
+blevels = [-5000,-4500, -4000, -3500, -3000,-2500, -2000, -1500, -1000, -500, 0]   # define levels for plotting (transition of colorbar)
 N       = (len(blevels)-1)*2
-bathy_cmap   = custom_div_cmap(N, mincol='#696969', midcol='dimgrey', midcol2='#888888' ,maxcol='w')
-vmin = -8000
+bathy_cmap   = custom_div_cmap(N, mincol='#3f3f3f', midcol='dimgrey', midcol2='#888888' ,maxcol='w')
+# bathy_cmap   = custom_div_cmap(N, mincol='#696969', midcol='dimgrey', midcol2='#888888' ,maxcol='w')
+levels = 20
+vmin = -5000
 vmax = 0
 
 
@@ -89,7 +91,7 @@ gs = fig.add_gridspec(3, 4, height_ratios=[1, 1.3, 0.1], width_ratios=[0.01, 1, 
 
 # Top right plot: HOTSPOTS
 ax2 = fig.add_subplot(gs[0, 1])
-bathy = ax2.contourf(grid.lon_rho, grid.lat_rho, -bathymetry, 60, cmap=bathy_cmap, vmin=-8000, vmax=0)
+bathy = ax2.contourf(grid.lon_rho, grid.lat_rho, -bathymetry, levels, cmap=bathy_cmap, vmin=-5000, vmax=0, rasterized=True)
 for c in bathy.collections:
     c.set_rasterized(True)
 ax2.scatter(hotspots[0], hotspots[1], 0.9, color='darkblue', label='Release locations')
@@ -108,7 +110,7 @@ ax2.set_yticklabels(['{:.1f}° N'.format(abs(y)) for y in ax2.get_yticks()])
 
 # Top left plot: COASTCON release locations and destination zones
 ax1 = fig.add_subplot(gs[0,2])
-bathy = ax1.contourf(grid.lon_rho, grid.lat_rho, -bathymetry, 60, cmap=bathy_cmap, vmin=-8000, vmax=0)
+bathy = ax1.contourf(grid.lon_rho, grid.lat_rho, -bathymetry, levels, cmap=bathy_cmap, vmin=-5000, vmax=0, rasterized=True)
 for c in bathy.collections:
     c.set_rasterized(True)
 for idx, buffered_area in enumerate(buffered_areas):
@@ -120,7 +122,7 @@ ax1.set_ylim(ymin+0.15+0.1, ymax-0.15+0.1)
 ax1.set_title('(b) Scenario 2: Intra-island connectivity', fontsize=font2)
 no_of_particles = []
 for idx, release_location in enumerate(release_locations):
-    zone_data = np.load(f'INPUT/release_locs_COASTCON_{release_location}.npy')
+    zone_data = np.load(f'../INPUT/release_locs_COASTCON_{release_location}.npy')
     ax1.scatter(zone_data[0], zone_data[1], 1, color='k')
     no_of_particles.append(f'{len(zone_data[0])}')
 ax1.legend([f'1: Klein Curaçao ({no_of_particles[0]} p.)', f'2: Oostpunt ({no_of_particles[1]} p.)',
@@ -137,7 +139,7 @@ ax1.set_yticklabels(['{:.1f}° N'.format(abs(y)) for y in ax1.get_yticks()])
 
 # Bottom plot: REGIOCON release locations
 ax3 = fig.add_subplot(gs[1, 1:])
-bathy = ax3.contourf(grid.lon_rho, grid.lat_rho, -bathymetry, 60, cmap=bathy_cmap, vmin=-8000, vmax=0, extend='min')
+bathy = ax3.contourf(grid.lon_rho, grid.lat_rho, -bathymetry, levels, cmap=bathy_cmap, vmin=-5000, vmax=0, extend='min', rasterized=True)
 for c in bathy.collections:
     c.set_rasterized(True)
 ax3.add_patch(polygon)
@@ -165,8 +167,9 @@ cbar = plt.colorbar(bathy, ax=ax3, orientation='vertical', pad=0.025, aspect=18,
 cbar.set_label('Depth [m]', fontsize=font1)
 cbar.ax.tick_params(labelsize=font0)
 blevels = [-4500, -4000, -3500, -3000, -2500, -2000, -1500, -1000,-500, 0]   # define levels for plotting (transition of colorbar)
+blevels = [-4500, -4000, -3500, -3000, -2500, -2000, -1500, -1000, -500, 0]
 cbar.set_ticks(blevels)
-cbar.set_ticklabels(blevels)
+# cbar.set_ticklabels(blevels)
 
 #grid
 ax1.grid(linewidth=0.5)
@@ -193,6 +196,8 @@ for ax in [ax1, ax2, ax3]:
 plt.tight_layout()
 
 # save
-fig.savefig('figures/MS1_scenarios.png', dpi=300, bbox_inches='tight')
-fig.savefig('figures/MS1_scenarios.pdf', dpi=300, bbox_inches='tight')
+fig.savefig('MS1_scenarios.png', dpi=300, bbox_inches='tight')
 
+
+
+# %%

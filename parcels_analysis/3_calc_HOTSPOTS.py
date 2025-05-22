@@ -4,28 +4,14 @@ and storing the results as NetCDF files and figures (seperate figures of each mo
 parcels scenario name: HOTSPOTS
 '''
 
-import os
+# import os
 import numpy as np
+import os
 import xarray as xr
 import matplotlib.pyplot as plt
-import cartopy
-import cartopy.crs as ccrs
 import cmocean
-from matplotlib.colors import LogNorm
-import matplotlib.ticker as ticker
 
-# load
-path             = "OUT_HOTSPOTS/"          # parcels output is here
-probability_path = "HOTSPOTS/PDF_unfiltered/"    # calculated PDFs are here
-probability_plots_path = "HOTSPOTS/PDF_unfiltered_figures/"
-config           = 'SCARIBOS_V8'             # model configuration (croco)
-path_grd         = '~/croco/CONFIG/'+config+'/CROCO_FILES/' # path of grid file
-part_config      = 'HOTSPOTS'               # name of scenario
-xmin, xmax = -69.49, -68.49                 # region of interest - in this region the PDF is caculated
-ymin, ymax = 11.67, 12.67                   # --|--
-bins_x, bins_y = 600, 500                   # resolution of PDF
-
-# List of simulation months
+# List of months to process
 sim_months_list = [
     'Y2020M04', 'Y2020M05', 'Y2020M06', 'Y2020M07', 'Y2020M08', 'Y2020M09', 'Y2020M10', 'Y2020M11', 'Y2020M12',
     'Y2021M01', 'Y2021M02', 'Y2021M03', 'Y2021M04', 'Y2021M05', 'Y2021M06', 'Y2021M07', 'Y2021M08', 'Y2021M09', 'Y2021M10', 'Y2021M11', 'Y2021M12',
@@ -34,86 +20,124 @@ sim_months_list = [
     'Y2024M01', 'Y2024M02'
 ]
 
-def probability_density(ds, bins_x, bins_y):
-    """
-    Calculates the PDF of the longitude and latitude coordinates of the trajectories at each observation.
-    
-    Input variables:
-    - ds: OceanParcels output of lon & lat of each particle at each timestep
-    - bins_x & bins_y: number of bins in x/y direction 
+resolution    = 100
+res           = str(resolution)
+analysis_type = 'unique'  # 'original'
+path          = "OUT_HOTSPOTS/"  # Parcels output path
+config        = 'SCARIBOS_V8'  # Model configuration (croco)
+path_grd      = '~/croco/CONFIG/' + config + '/CROCO_FILES/'  # Path of grid file
+part_config   = 'HOTSPOTS'  # Name of scenario
 
-    Function based on work by: Jimena Medina Rubio
-    """
-    
-    def histogram(lon, lat, bins_x, bins_y): 
-        # Filter out NaN values
-        lon = lon[~np.isnan(lon)]
-        lat = lat[~np.isnan(lat)]
-        # Define the edges of the bins
-        bins_edges_x = np.histogram_bin_edges(lon, bins=bins_x)
-        bins_edges_y = np.histogram_bin_edges(lat, bins=bins_y)
-        # Calculate the 2D normalized histogram & bin edges
-        H, x, y = np.histogram2d(lon.flatten(), lat.flatten(), bins=[bins_edges_x, bins_edges_y], density=True)
-        return H, x, y
+probability_path       = f"HOTSPOTS/PDF_{analysis_type}_results/"  # Calculated PDFs save path
+probability_plots_path = f"HOTSPOTS/PDF_{analysis_type}_figures/"  # Figures save path
+os.makedirs(probability_path, exist_ok=True)
+os.makedirs(probability_plots_path, exist_ok=True)
 
-    # Apply histogram function to all trajectories at every observation
-    lon_filter = ds.lon.values
-    lat_filter = ds.lat.values
+# Load grid data
+ds_grid   = xr.open_dataset(os.path.expanduser(path_grd + 'croco_grd.nc'))
+land_mask = ds_grid.mask_rho.values
+land_mask = np.where(land_mask == 0, 1, 0)
 
-    result = xr.apply_ufunc(
-        histogram,
-        lon_filter,
-        lat_filter,
-        bins_x,
-        bins_y,
-        input_core_dims=[['traj', 'obs'], ['traj', 'obs'], [], []],
-        output_core_dims=[['binx', 'biny'], [], []],
-        dask='parallelized',
-        vectorize=True,
-        output_dtypes=[float])
-    
-    # Define the bin centers from the output bin edges
-    bins_centres_x = np.linspace(result[1][0], result[1][-1], len(result[1])-1)
-    bins_centres_y = np.linspace(result[2][0], result[2][-1], len(result[2])-1)
-    # Convert particle counts per grid cell into a DataArray
-    da_result = xr.DataArray(result[0], 
-                             dims=['binx', 'biny'], 
-                             coords={'binx': bins_centres_x, 'biny': bins_centres_y}, 
-                             name='probability') 
-    
-    # Set values equal to zero to NaN & normalize results so that the sum of probability = 100
-    da_result = da_result.where(da_result != 0, np.nan) * 100 / np.nansum(da_result)
-    probability_file = f'{probability_path}{part_config}_PDF_unfiltered_x600_y500_{sim_months}.nc'
-    # Save the DataArray to NetCDF
-    da_result.to_netcdf(probability_file)
-    return da_result.T
+# Define region of interest and grid resolution
+xmin, xmax     = -69.49, -68.49
+ymin, ymax     = 11.67, 12.67
+bins_x, bins_y = resolution, resolution
 
+# Cut land_mask to the region of interest
+x1 = np.where(ds_grid.lon_rho.values[0, :] >= xmin)[0][0]
+x2 = np.where(ds_grid.lon_rho.values[0, :] <= xmax)[0][-1]
+y1 = np.where(ds_grid.lat_rho.values[:, 0] >= ymin)[0][0]
+y2 = np.where(ds_grid.lat_rho.values[:, 0] <= ymax)[0][-1]
 
-# Loop over all months and calculate PDF
-for sim_months in sim_months_list:
-    print(f"Processing {sim_months}...")
-    
-    # Load the data for the current month
-    file = (path + part_config + "_" + sim_months + ".zarr")
-    ds = xr.open_zarr(file)
-    
-    # Calculate the PDF
-    pdf = probability_density(ds, bins_x, bins_y)
-    print(f"Calculated and saved probability data for {sim_months} as NetCDF")
+land_mask_cut = xr.DataArray(
+    land_mask[y1:y2, x1:x2],
+    dims=["lat", "lon"],
+    coords={"lat": ds_grid.lat_rho.values[y1:y2, 0], "lon": ds_grid.lon_rho.values[0, x1:x2]}
+)
 
-    # Plot the PDF
+land_mask_cut = land_mask_cut.interp(
+    lat=np.linspace(ymin, ymax, bins_y),
+    lon=np.linspace(xmin, xmax, bins_x),
+    method="nearest"
+)
+
+# Process each month
+for month in sim_months_list:
+    print(f"Processing {month}...")
+
+    # Load particles data
+    ds = xr.open_zarr(path + part_config + "_" + month + ".zarr")
+    lon_particles = ds.lon.values
+    lat_particles = ds.lat.values
+
+    # number of all particles
+    n_particles = lon_particles.shape[0]
+    print(f"Number of particles: {n_particles}")
+
+    # Initialize the matrix for unique particle counts
+    unique_particles = np.zeros((bins_y, bins_x))
+    unique_particles_norm = np.zeros((bins_y, bins_x))
+
+    # Process each particle trajectory
+    for traj_idx in range(lon_particles.shape[0]):
+        particle_lon = lon_particles[traj_idx, :]
+        particle_lat = lat_particles[traj_idx, :]
+
+        # Skip trajectories with NaN values
+        valid_indices = ~np.isnan(particle_lon) & ~np.isnan(particle_lat)
+
+        # Filter for particles within the area of interest
+        within_area = (particle_lon >= xmin) & (particle_lon <= xmax) & \
+                    (particle_lat >= ymin) & (particle_lat <= ymax)
+
+        # Combine validity and area of interest filters
+        valid_indices = valid_indices & within_area
+        particle_lon = particle_lon[valid_indices]
+        particle_lat = particle_lat[valid_indices]
+
+        # Map particle positions to grid indices
+        x_indices = np.digitize(particle_lon, land_mask_cut.lon.values) - 1
+        y_indices = np.digitize(particle_lat, land_mask_cut.lat.values) - 1
+
+        # Clip indices to ensure they fall within grid bounds
+        x_indices = np.clip(x_indices, 0, bins_x - 1)
+        y_indices = np.clip(y_indices, 0, bins_y - 1)
+
+        # Create a temporary matrix for the current particle
+        temp_matrix = np.zeros((bins_y, bins_x))
+        for x, y in zip(x_indices, y_indices):
+            temp_matrix[y, x] = 1  # Mark presence in the grid cell
+
+        # Add the temporary matrix to the unique_particles matrix
+        unique_particles += temp_matrix
+
+    # normalize bby dividing with the number of particles
+    unique_particles_norm = unique_particles / n_particles
+
+    # Plot the heatmap of unique particles
     fig, ax = plt.subplots(figsize=(10, 8))
     cmap = cmocean.cm.matter
-    pcm = pdf.plot(ax=ax, cmap=cmap, norm=LogNorm(vmin=5e-4, vmax=5e-3), add_colorbar=False)
+    pcm = ax.pcolormesh(
+        land_mask_cut.lon, land_mask_cut.lat, unique_particles, cmap=cmap, shading='auto'
+    )
     cbar = fig.colorbar(pcm, ax=ax, extend='both')
-    cbar.set_label('Probability Density')
+    cbar.set_label('Unique Particles')
     ax.set_xlabel('Longitude')
     ax.set_ylabel('Latitude')
-    title = f'Probability Density Function of {part_config} particles for {sim_months}'
-    ax.set_title(title)
-    ax.set_xlim([xmin, xmax])
-    ax.set_ylim([ymin, ymax])
+    ax.set_title(f'Heatmap of Unique Particles ({month})')
+    land_mask_plot = np.ma.masked_where(land_mask_cut == 0, land_mask_cut)
+    ax.pcolormesh(
+        land_mask_cut.lon, land_mask_cut.lat, land_mask_plot, cmap='gray', shading='auto'
+    )
 
-    plt.savefig(probability_plots_path + 'PDF_unfiltered_x600_y500_' + part_config + '_' + sim_months + '.png', dpi=300)
-    plt.close(fig) 
-    print(f"Saved figure for {sim_months}")
+    # Save the heatmap figure
+    plt.savefig(probability_plots_path + f"heatmap_unique_particles_x{res}y{res}_{month}.png", dpi=300)
+    plt.close()
+
+    # Save the unique_particles matrix
+    np.save(probability_path + f"unique_particles_x{res}y{res}_{month}.npy", unique_particles)
+    np.save(probability_path + f"unique_particles_norm_x{res}y{res}_{month}.npy", unique_particles_norm)
+
+    print(f"Finished processing {month}.")
+
+

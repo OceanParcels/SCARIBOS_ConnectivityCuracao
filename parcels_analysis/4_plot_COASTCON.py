@@ -52,7 +52,7 @@ oceanmask  = np.where(landmask == 1, 1, np.nan)
 oceanmask  = np.where(landmask == 1, np.nan, 1)
 
 # load buffered areas
-buffered_areas    = np.load('COASTCON/buffer_areas/COASTCON_buffered_areas.npy', allow_pickle=True)
+buffered_areas    = np.load('../COASTCON/buffer_areas/COASTCON_buffered_areas.npy', allow_pickle=True)
 release_locations = ['zone_1', 'zone_2', 'zone_3', 'zone_4', 'zone_5', 'zone_6', 'zone_7', 'zone_8']
 colors            = plt.cm.ocean_r(np.linspace(0, 1, len(release_locations)+1))
 
@@ -62,7 +62,7 @@ source_zones      = [1, 2, 3, 4, 5, 6, 7, 8]  # Assuming 1-8 for 8 source zones
 destination_zones = range(8)                  # Assuming 0-7 for 8 destination zones
 for source in source_zones:
     for dest in destination_zones:
-        file_path = f'COASTCON/connectivity/COASTCON_source_zone_{source}_destination_zone_{dest}.npy'
+        file_path = f'../COASTCON/connectivity/COASTCON_source_zone_{source}_destination_zone_{dest}.npy'
         data[f'source{source}dest{dest+1}'] = np.load(file_path)
 
 # change dictionary such that the data is accessible as float arrays
@@ -127,43 +127,80 @@ connectivity_matrix[connectivity_matrix == 0] = 0.00000001
 #%% Plotting:
 
 fig = plt.figure(figsize=(15, 16))
-gs = fig.add_gridspec(2, 4, height_ratios=[1, 1.7], width_ratios=[0.14, 1, 1.1, 0.1])
+gs = fig.add_gridspec(3, 4, height_ratios=[1,0.01, 1.7], width_ratios=[0.14, 1, 1.1, 0.1])
 fig.subplots_adjust(hspace=5)
 fig.subplots_adjust(wspace=0)
 
 # PLOT 1: Map of zones
 axs1 = fig.add_subplot(gs[0, 1])
 bathy = axs1.contourf(grid.lon_rho, grid.lat_rho, -bathymetry, 60, cmap=bathy_cmap, vmin=-8000, vmax=0)
-for c in bathy.collections:
-    c.set_rasterized(True)
+# for c in bathy.collections:
+#     c.set_rasterized(True)
 for idx, buffered_area in enumerate(buffered_areas):
     axs1.fill(*buffered_area.exterior.xy, color=colors[idx+1], alpha=0.8, label=str(idx + 1))
 axs1.set_aspect('equal', 'box')
 axs1.contourf(grid.lon_rho, grid.lat_rho, landmask, cmap='Greys', alpha=1, zorder=1)
 axs1.contourf(grid.lon_rho, grid.lat_rho, landmask, cmap='Greys_r', alpha=0.9, zorder=2)
 axs1.set_title('(a) Map of zones', fontsize=16)
-axs1.set_xticks(np.arange(-69.2, -68.6, 0.2))
+axs1.set_xticks(np.arange(-69.2, -68.4, 0.2))
 axs1.set_yticks(np.arange(12, 12.6, 0.2))
 axs1.tick_params(axis='both', which='major', labelsize=13)
-axs1.set_xticklabels(['{:.1f}°W'.format(abs(x)) for x in axs1.get_xticks()])
-axs1.set_yticklabels(['{:.1f}°N'.format(abs(y)) for y in axs1.get_yticks()])
-axs1.set_xlim(-69.21, -68.52)
-axs1.set_ylim(11.94, 12.55)
+axs1.set_xticklabels(['{:.1f}° W'.format(abs(x)) for x in axs1.get_xticks()])
+axs1.set_yticklabels(['{:.1f}° N'.format(abs(y)) for y in axs1.get_yticks()])
+axs1.set_xlim(-69.25, -68.60)
+axs1.set_ylim(11.88, 12.45)
 for idx, release_location in enumerate(release_locations):
-    zone_data = np.load(f'INPUT/release_locs_COASTCON_{release_location}.npy')
+    zone_data = np.load(f'../INPUT/release_locs_COASTCON_{release_location}.npy')
     axs1.scatter(zone_data[0], zone_data[1], 3, color=colors[idx + 1])
-axs1.legend(loc='upper right', fontsize=14, title=None)
-axs1.legend(['1: Klein Curaçao', '2: Oostpunt', '3: Caracasbaai', '4: Willemstad', '5: Bullenbaai', '6: Valentijnsbaai', '7: Westpunt', '8: North Shore'], loc='upper right', fontsize=14)
+# axs1.legend(loc='upper right', fontsize=14, title=None)
+# axs1.legend(['1: Klein Curaçao', '2: Oostpunt', '3: Caracasbaai', '4: Willemstad', '5: Bullenbaai', '6: Valentijnsbaai', '7: Westpunt', '8: North Shore'], loc='upper right', fontsize=14)
 axs1.spines['top'].set_color('white')
 axs1.spines['right'].set_color('white')
 axs1.spines['bottom'].set_color('white')
 axs1.spines['left'].set_color('white')
+axs1.text(-68.7, 11.93, '1', fontsize=16, color='black', bbox=dict(facecolor=colors[1], edgecolor=colors[1], alpha=0.8))
+axs1.text(-68.78, 11.97, '2', fontsize=16, color='black', bbox=dict(facecolor=colors[2], edgecolor=colors[2], alpha=0.8))
+axs1.text(-68.875, 12.015, '3', fontsize=16, color='w', bbox=dict(facecolor=colors[3], edgecolor=colors[3], alpha=0.8))
+axs1.text(-68.96, 12.045, '4', fontsize=16, color='w', bbox=dict(facecolor=colors[4], edgecolor=colors[4], alpha=0.8))
+axs1.text(-69.06, 12.12, '5', fontsize=16, color='w', bbox=dict(facecolor=colors[5], edgecolor=colors[5], alpha=0.8))
+axs1.text(-69.15, 12.2, '6', fontsize=16, color='w', bbox=dict(facecolor=colors[6], edgecolor=colors[6], alpha=0.8))
+axs1.text(-69.21, 12.31, '7', fontsize=16, color='w', bbox=dict(facecolor=colors[7], edgecolor=colors[7], alpha=0.8))
+axs1.text(-68.96, 12.24, '8', fontsize=16, color='w', bbox=dict(facecolor=colors[8], edgecolor=colors[8], alpha=0.8))
+# set aspect ratio
+axs1.set_aspect('equal', 'box')
+
+
+locations = (
+    "1: Klein Curaçao\n"
+    "2: Oostpunt\n"
+    "3: Caracasbaai\n"
+    "4: Willemstad\n"
+    "5: Bullenbaai\n"
+    "6: Valentijnsbaai\n"
+    "7: Westpunt\n"
+    "8: North Shore"
+)
+
+axs1.text(
+    -68.81, 12.25, locations, fontsize=12, color='w',
+    bbox=dict(facecolor='grey', edgecolor='grey', alpha=0.8)
+)
 
 # PLOT 2: Average connectivity
 destinations = [f'{i}' for i in range(1, 9)]
 axs2 = fig.add_subplot(gs[0, 2])
+cmap = plt.get_cmap('cmo.matter').copy()
+cmap.set_bad(color='white')  # This
+cmap.set_over(color='white')
+masked_matrix = np.ma.masked_invalid(connectivity_matrix_avg)
+norm = mcolors.LogNorm(vmin=1, vmax=99)
 heatmap = sns.heatmap(connectivity_matrix_avg, xticklabels=destinations, yticklabels=destinations, annot=True,
-                      cmap='cmo.matter', cbar=False, norm=mcolors.LogNorm(1, 100), fmt=".0f", ax=axs2)
+                      cmap=cmap, cbar=False, norm=norm, fmt=".0f", ax=axs2)
+for i, j in zip(*np.where(connectivity_matrix_avg > 99)):
+    rect = plt.Rectangle((j, i), 1, 1, fill=True, color='white', linewidth=0.6, zorder=10)
+    rect.set_edgecolor('grey')
+    axs2.add_patch(rect)
+    axs2.scatter(j+0.5, i+0.5, color='black', marker='x', s=1500, linewidth=0.7, zorder=11)
 axs2.set_title('(b) Average connectivity (2020-2024)', fontsize=16)
 axs2.set_xlabel('Destination Zones', fontsize=14)
 axs2.set_ylabel('Source Zones', fontsize=14)
@@ -171,14 +208,20 @@ axs2.tick_params(axis='x', labelsize=14)  # Adjust the size of the x-tick labels
 axs2.tick_params(axis='y', labelsize=14)
 
 # PLOT 3: Monthly connectivity
-axs3 = fig.add_subplot(gs[1, :])  # Span across both columns
+axs3 = fig.add_subplot(gs[2, :])  # Span across both columns
 masked_matrix = np.ma.masked_invalid(connectivity_matrix)
 cmap = plt.get_cmap('cmo.matter').copy()
 cmap.set_bad(color='white')  # This
-norm = mcolors.LogNorm(vmin=1, vmax=100)
+cmap.set_over(color='white')
+norm = mcolors.LogNorm(vmin=1, vmax=99)
 axs2.set_aspect('equal', 'box')
 im = axs3.imshow(masked_matrix, cmap=cmap, norm=norm)
 axs3.set_xlabel('Destination Zones', fontsize=14)
+# Add black crosses for over-limit values
+over_limit = connectivity_matrix > 99  # Identify over-limit values
+for i, j in zip(*np.where(over_limit)):
+    axs3.scatter(j, i, color='black', marker='x', s=100, linewidth=0.6)
+
 
 # colorbar:
 cbar = fig.colorbar(im, ax=axs2, orientation='vertical', extend='min')
@@ -192,6 +235,7 @@ plt.gca().spines['top'].set_color('white')
 plt.gca().spines['right'].set_color('white')
 plt.gca().spines['bottom'].set_color('white')
 plt.gca().spines['left'].set_color('white')
+
 
 labels = ['1', '2', '3', '4', '5', '6', '7', '8', ' ',
           '1', '2', '3', '4', '5', '6', '7', '8', ' ',
@@ -215,11 +259,11 @@ filtered_labels = [label for label in labels if label != ' ']
 axs3.set_xticks(positions)
 axs3.set_xticklabels(filtered_labels, fontsize=14)
 
-fig.text(0.5, 0.6115, '(c) Monthly connectivity', ha='center', fontsize=16)
-fig.text(0.5, 0.595, 'Source Zones', ha='center', fontsize=14)
-startright = 0.148
-toright = 0.1
-totop = 0.581
+fig.text(0.5, 0.582, '(c) Monthly connectivity', ha='center', fontsize=16)
+fig.text(0.5, 0.565, 'Source Zones', ha='center', fontsize=14)
+startright = 0.17
+toright = 0.093
+totop = 0.55
 fig.text(startright,             totop, '1', ha='center', fontsize=14)
 fig.text(startright + toright,   totop, '2', ha='center', fontsize=14)
 fig.text(startright + 2*toright, totop, '3', ha='center', fontsize=14)
@@ -231,7 +275,6 @@ fig.text(startright + 7*toright, totop, '8', ha='center', fontsize=14)
 
 plt.tight_layout()
 
-plt.savefig('figures/COASTCON_all_for_MS.png', dpi=300)
-plt.savefig('figures/COASTCON_all_for_MS.pdf', dpi=300)
-# plt.savefig('figures/fig08.pdf', dpi=300, bbox_inches='tight')
-# plt.savefig('figures/fig08.png', dpi=300, bbox_inches='tight')
+plt.savefig('fig09.png', dpi=300, bbox_inches='tight')
+plt.savefig('fig09.pdf', dpi=300, bbox_inches='tight')
+# %%

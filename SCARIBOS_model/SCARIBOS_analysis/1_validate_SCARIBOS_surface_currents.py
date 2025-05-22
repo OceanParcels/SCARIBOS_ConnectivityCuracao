@@ -84,6 +84,28 @@ mask_rho.to_netcdf(f"data/mask_rho_scarib_{month}.nc")
 u_scarib = u_top_mean
 v_scarib = v_top_mean
 
+#%% Interpolate SCARIBOS data to Pelagia locations
+
+# Load SCARIBOS grid data
+dataset = ds_scarib
+lon_grid = dataset.lon_u.values  # 2D array
+lat_grid = dataset.lat_u.values  # 2D array
+u_grid = u_scarib  # 2D array
+v_grid = v_scarib  # 2D array
+
+# Load PLEAGIA lon/lat pairs (replace with actual data)
+pleagia_lon = LONGITUDE_all
+pleagia_lat = LATITUDE_all
+
+# Create interpolators
+u_interp_func = RegularGridInterpolator((lat_grid[:, 0], lon_grid[0, :]), u_grid[:-1,:])
+v_interp_func = RegularGridInterpolator((lat_grid[:, 0], lon_grid[0, :]), v_grid[:,:-1])
+
+# Interpolate u and v at PLEAGIA locations
+pleagia_points = np.vstack((pleagia_lat, pleagia_lon)).T
+u_interp = u_interp_func(pleagia_points)
+v_interp = v_interp_func(pleagia_points)
+
 #%% Plotting
 
 cmap          = cmocean.cm.speed
@@ -112,26 +134,30 @@ for c in cf.collections:
 axs[0].set_title('(a) SCARIBOS model')
 axs[0].set_xticks(np.round(np.arange(lon_scarib.min(), lon_scarib.max(), 0.5), 2))
 axs[0].set_yticks(np.arange(lat_scarib.min(), lat_scarib.max(), 0.3))
-axs[0].quiver(lon_scarib[skip], lat_scarib[skip], u_scarib[skip], v_scarib[skip], 
+axs[0].quiver(pleagia_lon[::4], pleagia_lat[::4], u_interp[::4], v_interp[::4], 
               color="black", scale=scale, width=width_qui, headwidth=headwidth_qui)
 axs[0].add_geometries(land.geometry, crs=ccrs.PlateCarree(), facecolor='white', edgecolor='none', zorder=2)
-axs[0].set_xlim([lon_min, lon_max])
-axs[0].set_ylim([lat_min, lat_max])
+axs[0].set_xlim([depth_lon_min, depth_lon_max])
+axs[0].set_ylim([depth_lat_min, depth_lat_max])
 axs[0].tick_params(axis='both', which='major', labelsize=font0)
 axs[0].set_yticklabels(['{:.1f}° N'.format(x) for x in axs[0].get_yticks()])
 axs[0].set_xticklabels(['{:.1f}° W'.format(abs(x)) for x in axs[0].get_xticks()])
 
 
+
 axs[1].add_geometries(land.geometry, crs=ccrs.PlateCarree(), facecolor='grey', edgecolor='none', zorder=2)
 axs[1].set_xticks(np.round(np.arange(lon_scarib.min(), lon_scarib.max(), 0.5), 2))
 axs[1].tick_params(axis='both', which='major', labelsize=font0)
+
 norm = mcolors.Normalize(vmin=0, vmax=max_speed)
 quiver = axs[1].quiver(LONGITUDE_all[::4], LATITUDE_all[::4], UVEL_all[::4], VVEL_all[::4], speed_all[::4], 
                        scale=scale, cmap=cmo.cm.speed, width=width_qui+0.001, headwidth=headwidth_qui, norm=norm)
 axs[1].set_title('(b) ADCP data')
-axs[1].set_xlim([lon_min, lon_max])
-axs[1].set_ylim([lat_min, lat_max])
+axs[1].set_xlim([depth_lon_min, depth_lon_max])
+axs[1].set_ylim([depth_lat_min, depth_lat_max])
 axs[1].set_xticklabels(['{:.1f}° W'.format(abs(x)) for x in axs[1].get_xticks()])
+
+
 cbar_ax = fig.add_axes([0.076, 0.12, 0.899, 0.035])  # [left, bottom, width, height]
 cbar = fig.colorbar(quiver, cax=cbar_ax, orientation='horizontal')
 cbar.set_label('Speed [m/s]', fontsize=font0)
@@ -143,11 +169,6 @@ plt.tight_layout(rect=[0, 0.05, 1, 1.1])  # Leave space at the bottom for the co
 
 # save
 plt.savefig('figures/validation_SCARIBOS_vs_Pelagia.png', dpi=300)
-plt.savefig('figures/validation_SCARIBOS_vs_Pelagia.pdf', format='pdf', dpi=300)
-
-
-
-
 
 
 

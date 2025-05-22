@@ -37,7 +37,7 @@ for i, sim_month in enumerate(sim_months):
         sim_month = 'Y2024M03'
     
     # Load the corresponding NetCDF file
-    his_file = f'../CONFIG/{config}/CROCO_FILES/croco_avg_{sim_month}.nc'
+    his_file = f'../../../croco/CONFIG/{config}/CROCO_FILES/croco_avg_{sim_month}.nc'
     try:
         ds_scarib = xr.open_dataset(his_file)
     except FileNotFoundError:
@@ -95,10 +95,10 @@ for i, sim_month in enumerate(sim_months):
     
 
 # Add plot title
-fig.suptitle(f"B) Monthly average zonal velocity at 69\u00b0 W meridional cross-seciton", fontsize=22)
+fig.suptitle(f"b) Monthly average zonal velocity at 69\u00b0 W meridional cross-seciton", fontsize=22)
 
 # Save the plot
-plt.savefig(f"figures/{config}_avg_meri_MONTHLY.png", dpi=300, bbox_inches="tight")
-plt.savefig(f"figures/{config}_avg_meri_MONTHLY.pdf", bbox_inches="tight", dpi=300)
+plt.savefig(f"{config}_avg_meri_MONTHLY.png", dpi=300, bbox_inches="tight")
+plt.savefig(f"{config}_avg_meri_MONTHLY.pdf", bbox_inches="tight", dpi=300)
 
 print("Saved plot as PNG and PDF.")

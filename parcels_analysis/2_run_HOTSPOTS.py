@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     # chosen variables
     part_config   = 'HOTSPOTS'
-    seeding_dt    = 24   # in hours - particles are seeded every seeding_dt days
+    seeding_dt    = 12   # in hours - particles are seeded every seeding_dt days
     seeding_start = 0    # in hours - particles are seeded at seeding_start hours
     adv_period    = 30   # in days, particles are advected for the period of adv_period days (they are deleted after that)
     ipart_dt      = 5*60 # seconds

@@ -16,6 +16,9 @@ import cmocean
 import cartopy.crs as ccrs
 import numpy as np
 from cartopy.mpl.gridliner import LongitudeFormatter, LatitudeFormatter
+import matplotlib.ticker as mticker
+from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
+from matplotlib.ticker import FixedLocator, FixedFormatter
 
 #%%
 # STEP 1: Calculate the mean surface speed and velocities for each month and store it in a separate .nc file
@@ -28,7 +31,7 @@ sim_months = ['Y2020M04', 'Y2020M05', 'Y2020M06', 'Y2020M07', 'Y2020M08', 'Y2020
               'Y2022M01', 'Y2022M02', 'Y2022M03', 'Y2022M04', 'Y2022M05', 'Y2022M06', 'Y2022M07', 'Y2022M08', 'Y2022M09', 'Y2022M10', 'Y2022M11', 'Y2022M12',
               'Y2023M01', 'Y2023M02', 'Y2023M03', 'Y2023M04', 'Y2023M05', 'Y2023M06', 'Y2023M07', 'Y2023M08', 'Y2023M09', 'Y2023M10', 'Y2023M11', 'Y2023M12',
               'Y2024M01', 'Y2024M02', 'Y2024M03']
-
+#%%
 # Accumulate mean surface speed and velocities for all months
 u_mean_all  = []
 v_mean_all  = []
@@ -39,7 +42,7 @@ for i, sim_month in enumerate(sim_months):
     month_idx = int(sim_month[6:8])  # Extract month index
 
     # Define output directory for the current month
-    output_dir = f'../CONFIG/{config}/CROCO_FILES/surface_currents/{sim_month}'
+    output_dir = f'../../../croco/CONFIG/{config}/CROCO_FILES/surface_currents/{sim_month}'
     u_file = f'{output_dir}_u.nc'
     v_file = f'{output_dir}_v.nc'
     speed_file = f'{output_dir}_speed.nc'
@@ -111,8 +114,8 @@ print("All months combined mean saved.")
 # STEP 2: plot the average surface currents for all years together
 
 # Load the previously saved data
-mean_file  = f'../CONFIG/{config}/CROCO_FILES/surface_currents/surface_currents_mean_of_all_years.nc'
-speed_file = f'../CONFIG/{config}/CROCO_FILES/surface_currents/surface_speed_mean_of_all_years.nc'
+mean_file  = f'../../../croco/CONFIG/{config}/CROCO_FILES/surface_currents/surface_currents_mean_of_all_years.nc'
+speed_file = f'../../../croco/CONFIG/{config}/CROCO_FILES/surface_currents/surface_speed_mean_of_all_years.nc'
 
 # Load the datasets
 ds_mean  = xr.open_dataset(mean_file)
@@ -161,12 +164,14 @@ ax.plot([-69.5, -68.5, -68.5, -69.5, -69.5], [11.65, 11.65, 12.65, 12.65, 11.65]
 ax.plot([-69.0, -69.0], [11.45, 12.15], color='black', linewidth=3.5, transform=ccrs.PlateCarree(), zorder=3)
 
 ax.set_ylim([10.35, None])
-ax.set_title("(A) Average current speed and direction, April 2020-March 2024", fontsize=22, pad=20)
+ax.set_title("(a) Average current speed and direction, April 2020-March 2024", fontsize=24, pad=20)
 
 
 # Save the plot
-plt.savefig(f"figures/{config}_avg_surface_ALLYEARS.png", bbox_inches="tight", dpi=300)
-plt.savefig(f"figures/{config}_avg_surface_ALLYEARS.pdf", bbox_inches="tight", dpi=300)
+plt.savefig(f"../../figures/{config}_avg_surface_ALLYEARS.png", bbox_inches="tight", dpi=300)
+plt.savefig(f"../../figures/{config}_avg_surface_ALLYEARS.pdf", bbox_inches="tight", dpi=300)
 
 print(f"Figure saved to figures/{config}_avg_surface_ALLYEARS...")
 
+
+# %%

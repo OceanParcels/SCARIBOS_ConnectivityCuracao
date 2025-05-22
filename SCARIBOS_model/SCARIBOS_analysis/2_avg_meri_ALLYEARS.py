@@ -28,6 +28,7 @@ sim_months = ['Y2020M04', 'Y2020M05', 'Y2020M06', 'Y2020M07', 'Y2020M08', 'Y2020
               'Y2023M01', 'Y2023M02', 'Y2023M03', 'Y2023M04', 'Y2023M05', 'Y2023M06', 'Y2023M07', 'Y2023M08', 'Y2023M09', 'Y2023M10', 'Y2023M11', 'Y2023M12',
               'Y2024M01', 'Y2024M02', 'Y2024M03']
 
+#%%
 # Accumulate mean meridional velocity profiles for all months
 all_means  = []
 min_values = []
@@ -49,7 +50,7 @@ for i, sim_month in enumerate(sim_months):
     all_means.append(u_meri_mean)
 
     # Save the mean of the current month to a separate NetCDF file
-    u_meri_mean.to_netcdf(f'../CONFIG/{config}/CROCO_FILES/croco_avg_meri_{sim_month}.nc')
+    u_meri_mean.to_netcdf(f'../../../croco/CONFIG/{config}/CROCO_FILES/croco_avg_meri_{sim_month}.nc')
     print(f'Mean for {sim_month} saved.')
     min_values.append(u_meri_mean.min().values)
     max_values.append(u_meri_mean.max().values)
@@ -72,8 +73,8 @@ print("All months combined mean saved.")
 
 # STEP 2: plot the average meridional velocity profile for all years together 
 
-ds_scarib   = xr.open_dataset(f"../CONFIG/{config}/CROCO_FILES/croco_avg_Y2020M04.nc") # open one croco file just so you can plot bathymetry cross section
-u_meri_mean = xr.open_dataset(f"../CONFIG/{config}/CROCO_FILES/croco_avg_meri_ALLYEARS.nc")
+ds_scarib   = xr.open_dataset(f"../../../croco/CONFIG/{config}/CROCO_FILES/croco_avg_Y2020M04.nc") # open one croco file just so you can plot bathymetry cross section
+u_meri_mean = xr.open_dataset(f"../../../croco/CONFIG/{config}/CROCO_FILES/croco_avg_meri_ALLYEARS.nc")
 
 s_rho               = u_meri_mean.s_rho
 h                   = ds_scarib.h
@@ -90,7 +91,7 @@ fig = plt.figure(figsize=(28.5, 13.5))
 
 image = u_meri_mean.u.plot(x="lat_u", y="depth",  add_colorbar=False, vmin=-0.8, vmax=0.8, cmap=cmocean.cm.balance, rasterized=True)
 depth_bottom.plot(color='grey', x="lat_rho")
-plt.title("(a) Average zonal velocity at 69\u00b0 W meridional cross-seciton, April 2020-March 2024", fontsize=24, pad=20)
+plt.title("(a) Average zonal velocity at 69\u00b0 W meridional cross-seciton, April 2020-March 2024", fontsize=26, pad=20)
 plt.fill_between(depth.lat_rho, depth_bottom_values, minus_1400, color='gray', alpha=0.4)
 plt.xlim([11.42, 12.149])
 plt.ylim([-1400, 0])
@@ -105,8 +106,8 @@ cbar = fig.colorbar(image)
 cbar.set_label('Zonal velocity [m/s]', fontsize=22)
 cbar.ax.tick_params(labelsize=20)
 
-plt.savefig(f'figures/{config}_avg_meri_ALLYEARS_HQ.png',bbox_inches="tight", dpi=300)
-plt.savefig(f'figures/{config}_avg_meri_ALLYEARS_HQ.pdf',bbox_inches="tight", dpi=300)
+plt.savefig(f'{config}_avg_meri_ALLYEARS_HQ.png',bbox_inches="tight", dpi=300)
+plt.savefig(f'{config}_avg_meri_ALLYEARS_HQ.pdf',bbox_inches="tight", dpi=300)
 
 
 

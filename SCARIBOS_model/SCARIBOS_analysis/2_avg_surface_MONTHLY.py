@@ -46,7 +46,7 @@ for i, sim_month in enumerate(sim_months):
         sim_month = 'Y2024M03'
     
     # Define output directory for the current month
-    output_dir = f'../CONFIG/{config}/CROCO_FILES/surface_currents/{sim_month}'
+    output_dir = f'../../../croco/CONFIG/{config}/CROCO_FILES/surface_currents/{sim_month}'
     u_file = f'{output_dir}_u.nc'
     v_file = f'{output_dir}_v.nc'
     speed_file = f'{output_dir}_speed.nc'
@@ -60,7 +60,7 @@ for i, sim_month in enumerate(sim_months):
         print(f"Files for {sim_month} exist. Loaded u, v, and speed.")
     else:
         # Load CROCO output file for the current month if not already processed
-        his_file = f'../CONFIG/{config}/CROCO_FILES/surface_currents/croco_avg_{sim_month}_surface.nc'
+        his_file = f'../../../croco/CONFIG/{config}/CROCO_FILES/surface_currents/croco_avg_{sim_month}_surface.nc'
         ds_scarib = xr.open_dataset(his_file)
         print(f"Processing {sim_month}")
 
@@ -154,11 +154,11 @@ for i, sim_month in enumerate(sim_months):
         ax.set_axis_off()
 
 # Title
-fig.suptitle("(B) Monthly average current speed and direction around Curaçao", fontsize=22)
+fig.suptitle("(b) Monthly average current speed and direction around Curaçao", fontsize=22)
 
 # Save the plot as PNG and PDF
-plt.savefig(f"figures/{config}_avg_surface_MONTHLY_HQ.png", bbox_inches="tight", dpi=300)
-plt.savefig(f"figures/{config}_avg_surface_MONTHLY_HQ.pdf", bbox_inches="tight", dpi=300)
+plt.savefig(f"../../figures/{config}_avg_surface_MONTHLY_HQ.png", bbox_inches="tight", dpi=300)
+plt.savefig(f"../../figures/{config}_avg_surface_MONTHLY_HQ.pdf", bbox_inches="tight", dpi=300)
 
 
 #%%
